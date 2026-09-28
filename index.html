@@ -766,8 +766,14 @@ AE.boot(function () {
   lot.innerHTML = '<div class=&quot;car&quot;></div><div class=&quot;car b&quot;></div>';
   AE.setBucks(200);
   AE.caption('This guy took<br>my <span class=&quot;hl&quot;>parking spot.</span>');
-  AE.after(2000, function () { AE.caption('So I bought<br><span class=&quot;hl&quot;>the land under it.</span>'); });
-  AE.after(4000, function () {
+  var revealed = false;
+  AE.after(1200, function () { if (!revealed) AE.caption('So I bought<br><span class=&quot;hl&quot;>the land under it.</span>'); });
+  AE.after(2400, reveal);
+  // any tap during the story skips straight to the map
+  document.addEventListener('click', function skip() { document.removeEventListener('click', skip); reveal(); });
+  function reveal() {
+    if (revealed || AE.isPaused()) return;
+    revealed = true;
     AE.$('dim').className = 'off';
     AE.$('hud').className = '';
     lot.className = 'parcel lot target';
@@ -778,7 +784,7 @@ AE.boot(function () {
       AE.caption('Hit <span class=&quot;hl&quot;>BUY LAND</span>');
       AE.buy(function () { claimLot(lot); });
     });
-  });
+  }
 });
 </script>
 </body>
