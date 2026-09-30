@@ -553,6 +553,8 @@ var COMMONS = ['tree', 'house', 'city', 'tree', 'lake', 'shop', 'tree'];
 var paused = false, started = false, timers = [], last = 0;
 function after(ms, fn) { timers.push({ t: ms, fn: fn }); }
 function loop() {
+  var cw = window.innerWidth || document.documentElement.clientWidth, ch = window.innerHeight || document.documentElement.clientHeight;
+  if (cw !== lastW || ch !== lastH) { fit(); if (handEl) hand(handEl); placePin(); }
   var ts = +new Date(), dt = last ? Math.min(ts - last, 100) : 33; last = ts;
   if (paused || !started) return;
   var due = [];
@@ -569,7 +571,7 @@ function hand(el) {
   h.style.left = (r.left + r.width / 2) + 'px'; h.style.top = (r.top + r.height / 2) + 'px'; h.style.display = 'block';
 }
 var cur = null;
-function show(id) { if (cur) $(cur).className = 'scene'; $(id).className = 'scene on'; cur = id; }
+function show(id) { if (cur) $(cur).className = 'scene'; $(id).className = 'scene on'; cur = id; fit(); }
 
 /* ---- flow ---- */
 var step = 0;
@@ -649,9 +651,13 @@ function setPaused(p) { paused = p; document.body.className = p ? 'paused' : '';
 function showAd() { if (started) { setPaused(false); return; } started = true; setPaused(false); go(1); }
 function onViewableChange(v) { if (v) showAd(); else setPaused(true); }
 $('cta').addEventListener('click', openStore);
-var K = 1;
+var K = 1, lastW = 0, lastH = 0;
+// a webview/iframe can report 0x0 before layout; never apply a zero scale, and re-measure whenever the size changes
 function fit() {
-  K = Math.min(window.innerWidth / 360, window.innerHeight / 640);
+  var w = window.innerWidth || document.documentElement.clientWidth, h = window.innerHeight || document.documentElement.clientHeight;
+  if (!w || !h) return;
+  lastW = w; lastH = h;
+  K = Math.min(w / 360, h / 640);
   var st = document.getElementsByClassName('stage'), t = 'scale(' + K + ')';
   for (var i = 0; i < st.length; i++) { st[i].style.webkitTransform = t; st[i].style.transform = t; }
 }
